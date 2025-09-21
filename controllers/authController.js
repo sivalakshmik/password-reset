@@ -6,7 +6,7 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 export const register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { name,email, password } = req.body;
     const hashed = await bcrypt.hash(password, 10);
     const user = await User.create({ email, password: hashed });
     res.status(201).json({ message: "User registered", user });
@@ -72,3 +72,4 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
