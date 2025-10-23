@@ -1,5 +1,7 @@
 import axios from "axios";
 import FormData from "form-data";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const sendEmail = async (to, subject, text) => {
   try {
@@ -21,12 +23,11 @@ export const sendEmail = async (to, subject, text) => {
       }
     );
 
-    console.log(`📧 Email sent successfully to ${to}: ${response.data.id}`);
+    console.log(`✅ Email sent successfully to ${to}: ${response.data.id}`);
   } catch (error) {
     console.error(
       "❌ Mailgun email failed:",
       error.response?.data || error.message
     );
-    throw new Error("Failed to send email. Please try again later.");
   }
 };
