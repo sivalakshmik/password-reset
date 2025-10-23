@@ -1,33 +1,22 @@
-import axios from "axios";
-import FormData from "form-data";
+import Brevo from "@getbrevo/brevo";
 import dotenv from "dotenv";
 dotenv.config();
 
 export const sendEmail = async (to, subject, text) => {
   try {
-    const form = new FormData();
-    form.append("from", process.env.MAILGUN_FROM);
-    form.append("to", to);
-    form.append("subject", subject);
-    form.append("text", text);
+    const client = new Brevo.TransactionalEmailsApi();
+    client.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
-    const response = await axios.post(
-      `https://api.mailgun.net/v3/${process.env.MAILGUN_DOMAIN}/messages`,
-      form,
-      {
-        auth: {
-          username: "api",
-          password: process.env.MAILGUN_API_KEY,
-        },
-        headers: form.getHeaders(),
-      }
-    );
+    const email = {
+      sender: { email: process.env.SENDER_EMAIL, name: process.env.SENDER_NAME },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+    };
 
-    console.log(`✅ Email sent successfully to ${to}: ${response.data.id}`);
+    const result = await client.sendTransacEmail(email);
+    console.log("✅ Email sent successfully:", result.messageId);
   } catch (error) {
-    console.error(
-      "❌ Mailgun email failed:",
-      error.response?.data || error.message
-    );
+    console.error("❌ Email send failed:", error.response?.body || error.message);
   }
 };
