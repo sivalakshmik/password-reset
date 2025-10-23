@@ -4,13 +4,13 @@ import FormData from "form-data";
 export const sendEmail = async (to, subject, text) => {
   try {
     const form = new FormData();
-    form.append("from", "Booking App <mailgun@YOUR_SANDBOX_DOMAIN>");
+    form.append("from", process.env.MAILGUN_FROM);
     form.append("to", to);
     form.append("subject", subject);
     form.append("text", text);
 
     const response = await axios.post(
-      "https://api.mailgun.net/v3/YOUR_SANDBOX_DOMAIN/messages",
+      `https://api.mailgun.net/v3/${process.env.MAILGUN_DOMAIN}/messages`,
       form,
       {
         auth: {
@@ -23,7 +23,10 @@ export const sendEmail = async (to, subject, text) => {
 
     console.log(`📧 Email sent successfully to ${to}: ${response.data.id}`);
   } catch (error) {
-    console.error("❌ Mailgun email failed:", error.response?.data || error.message);
+    console.error(
+      "❌ Mailgun email failed:",
+      error.response?.data || error.message
+    );
     throw new Error("Failed to send email. Please try again later.");
   }
 };
