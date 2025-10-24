@@ -18,16 +18,20 @@ export const sendEmail = async (to, subject, htmlContent) => {
       },
       to: [{ email: to }],
       subject,
-      htmlContent, // ✅ correct key (must be HTML string)
-      textContent: "", // optional
+      htmlContent,
     };
 
-    const res = await client.sendTransacEmail(emailData);
-    console.log(`✅ Email sent to ${to}:`, res?.messageId || "Success");
+    console.log("📧 Sending email...");
+    console.log("➡️ To:", to);
+    console.log("➡️ From:", process.env.SENDER_EMAIL);
+    console.log("➡️ API Key starts with:", process.env.BREVO_API_KEY?.slice(0, 8));
+
+    const response = await client.sendTransacEmail(emailData);
+    console.log("✅ Email sent:", response?.messageId || "Success");
   } catch (error) {
-    console.error(
-      "❌ Email send failed:",
-      error.response?.body || error.message
-    );
+    console.error("❌ Email send failed:");
+    console.error("Status:", error.response?.status);
+    console.error("Body:", error.response?.body);
+    console.error("Message:", error.message);
   }
 };
