@@ -1,22 +1,25 @@
-import Brevo from "@getbrevo/brevo";
-import dotenv from "dotenv";
-dotenv.config();
+import nodemailer from "nodemailer";
 
 export const sendEmail = async (to, subject, text) => {
   try {
-    const client = new Brevo.TransactionalEmailsApi();
-    client.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-    const email = {
-      sender: { email: process.env.SENDER_EMAIL, name: process.env.SENDER_NAME },
-      to: [{ email: to }],
+    const mailOptions = {
+      from: `"Password Reset" <${process.env.EMAIL_USER}>`,
+      to,
       subject,
-      textContent: text,
+      html: `<p>${text}</p>`,
     };
 
-    const result = await client.sendTransacEmail(email);
-    console.log("✅ Email sent successfully:", result.messageId);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`📧 Email sent successfully to ${to}: ${info.response}`);
   } catch (error) {
-    console.error("❌ Email send failed:", error.response?.body || error.message);
+    console.error("❌ Email send failed:", error.response || error.message);
   }
 };
