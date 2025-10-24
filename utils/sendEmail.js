@@ -1,25 +1,30 @@
 import nodemailer from "nodemailer";
 
-export const sendEmail = async (to, subject, text) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  pool: true,
+  maxConnections: 1,
+  maxMessages: 5,
+  rateLimit: 1, // avoid Gmail throttling
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
-    const mailOptions = {
+export const sendEmail = async (to, subject, text) => {
+  const start = Date.now();
+  try {
+    const info = await transporter.sendMail({
       from: `"Password Reset" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html: `<p>${text}</p>`,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`📧 Email sent successfully to ${to}: ${info.response}`);
-  } catch (error) {
-    console.error("❌ Email send failed:", error.response || error.message);
+    });
+    console.log(
+      `✅ Sent to ${to} in ${(Date.now() - start) / 1000}s (${info.response})`
+    );
+  } catch (e) {
+    console.error(`❌ Email to ${to} failed:`, e.message);
   }
 };
