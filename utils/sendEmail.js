@@ -5,6 +5,7 @@ dotenv.config();
 export const sendEmail = async (to, subject, htmlContent) => {
   try {
     const client = new Brevo.TransactionalEmailsApi();
+
     client.setApiKey(
       Brevo.TransactionalEmailsApiApiKeys.apiKey,
       process.env.BREVO_API_KEY
@@ -17,13 +18,16 @@ export const sendEmail = async (to, subject, htmlContent) => {
       },
       to: [{ email: to }],
       subject,
-      htmlContent,       // ✅ HTML body
-      textContent: "",   // ✅ Force Gmail to display HTML
+      htmlContent, // ✅ correct key (must be HTML string)
+      textContent: "", // optional
     };
 
     const res = await client.sendTransacEmail(emailData);
     console.log(`✅ Email sent to ${to}:`, res?.messageId || "Success");
-  } catch (err) {
-    console.error("❌ Email send failed:", err.response?.body || err.message);
+  } catch (error) {
+    console.error(
+      "❌ Email send failed:",
+      error.response?.body || error.message
+    );
   }
 };
