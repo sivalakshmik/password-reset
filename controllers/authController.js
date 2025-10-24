@@ -41,8 +41,9 @@ export const forgotPassword = async (req, res) => {
     user.resetToken = token;
     user.resetTokenExpire = Date.now() + 3600000; // 1 hour
     await user.save();
+    
+     const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
-    const resetURL = `${process.env.CLIENT_URL}/reset/${token}`;
     await sendEmail(email, "Password Reset", `Click here to reset: ${resetURL}`);
 
     res.json({ message: "Reset link sent" });
@@ -72,3 +73,4 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
