@@ -10,9 +10,8 @@ export const register = async (req, res) => {
     const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    if (existingUser)
       return res.status(400).json({ message: "Email already registered" });
-    }
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, password: hashed });
@@ -51,31 +50,31 @@ export const forgotPassword = async (req, res) => {
     if (!user)
       return res.status(400).json({ message: "User not found with this email" });
 
-    // Generate reset token
+    // Generate token
     const token = crypto.randomBytes(32).toString("hex");
     user.resetToken = token;
     user.resetTokenExpire = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    // Create reset URL (frontend)
     const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`;
     console.log("🔗 Password Reset Link:", resetURL);
 
-    // HTML Email
+    // HTML email content
     const htmlContent = `
       <div style="font-family:Arial,sans-serif;line-height:1.6;">
         <h2 style="color:#0057B7;">Password Reset Request</h2>
         <p>Hello ${user.name || "User"},</p>
-        <p>You requested to reset your password. Click the button below to proceed:</p>
+        <p>You requested to reset your password. Click the button below to continue:</p>
         <p style="margin:20px 0;">
-          <a href="${resetURL}" style="
-            background-color:#FFCC00;
-            color:#000;
+          <a href="${resetURL}" 
+            style="background-color:#FFCC00;
+            color:black;
             padding:10px 20px;
-            text-decoration:none;
             border-radius:5px;
-            font-weight:bold;
-          ">Reset My Password</a>
+            text-decoration:none;
+            font-weight:bold;">
+            Reset My Password
+          </a>
         </p>
         <p>This link will expire in 1 hour.</p>
         <p>If you didn’t request this, please ignore this email.</p>
@@ -86,9 +85,7 @@ export const forgotPassword = async (req, res) => {
       </div>
     `;
 
-    // Send email via Brevo
     await sendEmail(email, "Password Reset Request", htmlContent);
-
     res.status(200).json({
       message:
         "Password reset link sent successfully. Please check your inbox or spam folder.",
@@ -105,7 +102,6 @@ export const resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 
-    // Find valid user with token not expired
     const user = await User.findOne({
       resetToken: token,
       resetTokenExpire: { $gt: Date.now() },
@@ -114,7 +110,6 @@ export const resetPassword = async (req, res) => {
     if (!user)
       return res.status(400).json({ message: "Invalid or expired reset link" });
 
-    // Hash new password
     user.password = await bcrypt.hash(password, 10);
     user.resetToken = undefined;
     user.resetTokenExpire = undefined;
